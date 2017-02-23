@@ -8,16 +8,13 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
-
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.CameraServer;
-import edu.wpi.first.wpilibj.networktables.NetworkTable;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Entropy2017Targeting extends Thread {
-	private static final boolean DEBUG_ENABLED = false;
+	private static final boolean DEBUG_OUTPUT_ENABLED = false;
 	
 	// Widget Name
 	public static final String NAME = "ENTROPY-2017-TARGETING 2:18:2017";
@@ -225,7 +222,7 @@ public class Entropy2017Targeting extends Thread {
 	    	output.pegyHeight = ypeaks.get(0).getStop() - ypeaks.get(0).getStart();
 	    	output.pegy = ypeaks.get(0).getStart() + output.pegyHeight/2;
 	    	output.correctionAngle = (double)((output.pegx-m.cols()/2))/m.cols() * 60.0;
-	    	if (DEBUG_ENABLED)
+	    	if (DEBUG_OUTPUT_ENABLED)
 	    	{
 	    		System.out.println("pegx = " + output.pegx + " , " + "pegxspace = " + 
 	    			output.pegxSpace + " , " + "pegyheight = " + output.pegyHeight); 
@@ -305,7 +302,7 @@ public class Entropy2017Targeting extends Thread {
 	 * @param x
 	 * @param y
 	 */
-	private void drawTarget(Mat m, long x, long y,boolean peg){
+	private void drawTarget(Mat m, long x, long y, boolean peg){
 		
 		int size = 40;
 		Scalar color;
@@ -370,7 +367,7 @@ public class Entropy2017Targeting extends Thread {
 			total1 += retSums[k];
 		}
 		
-		if (DEBUG_ENABLED)
+		if (DEBUG_OUTPUT_ENABLED)
 		{
 			System.out.println("" + m.rows()+ "  " + m.cols());
 			System.out.println(status);

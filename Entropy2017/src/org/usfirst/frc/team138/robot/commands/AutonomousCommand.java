@@ -17,11 +17,11 @@ public class AutonomousCommand extends CommandGroup {
 		{
 			if (startPos == "middle")
 			{
-				addSequential(new AutoDrive(-0.6, 50));
+				addSequential(new AutoDrive(-0.6, 65));
 			}
 			else
 			{
-				addSequential(new AutoDrive(-0.6, 50));
+				addSequential(new AutoDrive(-0.6, 90));
 			}
 		}
 		
@@ -30,17 +30,20 @@ public class AutonomousCommand extends CommandGroup {
 		{
 			if (startPos == "left")
 			{
-				addSequential(new AutoDrive(-0.6, 96));
+				addSequential(new AutoDrive(-0.7, 96));
 				addSequential(new AutoDrive(30));
+				addSequential(new Wait(0.4));
+				addSequential(new GearCorrect(10));
 				addSequential(new AutoDrive(-0.6, 7));
 				addSequential(new PushGear());
 				addSequential(new PushGear());
-				addSequential(new AutoDrive(0.6, 12));
+				addSequential(new AutoDrive(0.7, 12));
 			}
 			if (startPos == "middle")
 			{
 				addSequential(new AutoDrive(-0.7, 65));
-				//addSequential(new GearCorrect());
+				addSequential(new Wait(0.4));
+				addSequential(new GearCorrect(10));
 				addSequential(new AutoDrive(-0.6, 4));
 				addSequential(new SetClawPosition(true));
 				addSequential(new PushGear());
@@ -50,12 +53,14 @@ public class AutonomousCommand extends CommandGroup {
 			}
 			if (startPos == "right")
 			{
-				addSequential(new AutoDrive(-0.6, 86));
+				addSequential(new AutoDrive(-0.7, 86));
 				addSequential(new AutoDrive(-30));
+				addSequential(new Wait(0.4));
+				addSequential(new GearCorrect(10));
 				addSequential(new AutoDrive(-0.6, 30));
 				addSequential(new PushGear());
 				addSequential(new PushGear());
-				addSequential(new AutoDrive(0.6, 12));
+				addSequential(new AutoDrive(0.7, 12));
 			}
 			
 			// This mode then shoots fuel into the goal depending on team and start position

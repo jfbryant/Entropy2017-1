@@ -1,21 +1,11 @@
 package org.usfirst.frc.team138.robot;
 
-import edu.wpi.cscore.CvSink;
-import edu.wpi.cscore.CvSource;
-import edu.wpi.cscore.UsbCamera;
-import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.usfirst.frc.team138.robot.subsystems.*;
-import org.usfirst.frc.team138.robot.subsystems.vision2017.Entropy2017Targeting;
-
-import java.io.FileNotFoundException;
-
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
 import org.usfirst.frc.team138.robot.commands.*;
 
 /**
@@ -50,11 +40,11 @@ public class Robot extends IterativeRobot {
     	// Interface
 		oi = new OI();
 		Sensors.initialize();
-		Sensors.updateSmartDashboard();
 		
+		// Smart Dashboard Initialization
+		Sensors.updateSmartDashboard();
 		SmartDashboard.putData(Scheduler.getInstance());
 		
-		//
 		teamChooser = new SendableChooser<String>();
 		teamChooser.addDefault("Red Alliance", "red");
 		teamChooser.addObject("Blue Alliance", "blue");

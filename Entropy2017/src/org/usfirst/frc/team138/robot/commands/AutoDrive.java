@@ -46,10 +46,6 @@ public class AutoDrive extends Command implements PIDOutput{
 		rotateInPlace = false;
 		driveSpeed = speedArg;
 		driveDistance = distanceArg;
-		turnController = new PIDController(kPDrive, kI, kD, Sensors.gyro, this);
-		turnController.setAbsoluteTolerance(ToleranceDegrees);
-	    turnController.setOutputRange(-1.0, 1);
-	    turnController.setContinuous(true);
 	}
 	
 	//rotates to an angle
@@ -57,20 +53,20 @@ public class AutoDrive extends Command implements PIDOutput{
 		requires(Robot.drivetrain);
 		rotateInPlace = true;
 		targetAngle = angle;
-		turnController = new PIDController(kPRotate, kI, kD, Sensors.gyro, this);
-		turnController.setAbsoluteTolerance(ToleranceDegrees);         
-	    turnController.setOutputRange(-1.0, 1);
-	    turnController.setContinuous(true);
 	}
 
 	protected void initialize() {
 		Sensors.resetEncoders();
-		Sensors.setCurrentPos();
-		turnController.setInputRange(Sensors.gyro.getAngle() - 360.0,
-				Sensors.gyro.getAngle() + 360.0);
+		Sensors.gyro.reset();
+		
+		turnController = new PIDController(kPRotate, kI, kD, Sensors.gyro, this);
+		turnController.setAbsoluteTolerance(ToleranceDegrees);         
+	    turnController.setOutputRange(-1.0, 1);
+	    turnController.setContinuous(true);
+		turnController.setInputRange(360.0, 360.0);
 		if (rotateInPlace)
 		{
-			turnController.setSetpoint(Sensors.gyro.getAngle() + targetAngle);
+			turnController.setSetpoint(targetAngle);
 		}
 		else 
 		{
@@ -91,11 +87,11 @@ public class AutoDrive extends Command implements PIDOutput{
 			{
 				if (targetAngle > 0)
 				{
-					done = Sensors.getRelativeAngle() >= targetAngle;
+					done = Sensors.gyro.getAngle() >= targetAngle;
 				}
 				else
 				{
-					done = Sensors.getRelativeAngle() <= targetAngle;
+					done = Sensors.gyro.getAngle() <= targetAngle;
 				}
 			}
 			else

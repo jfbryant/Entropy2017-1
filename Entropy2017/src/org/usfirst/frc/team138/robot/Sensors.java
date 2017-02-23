@@ -1,9 +1,6 @@
 package org.usfirst.frc.team138.robot;
 
-import java.util.ArrayList;
-
 import org.usfirst.frc.team138.robot.subsystems.vision2017.Entropy2017Targeting;
-
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.CameraServer;
@@ -13,14 +10,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Sensors {
 	public static ADXRS450_Gyro gyro;
-	static double prevAngle = 0;
 	
 	static Encoder leftEncoder;
 	static Encoder rightEncoder;
 	
 	static UsbCamera camera;
 	public static Entropy2017Targeting cameraProcessor;
-	
 	//static Servo cameraServo = new Servo(RobotMap.CAMERA_TILT_PORT);
 	
 	public static void initialize() {
@@ -65,14 +60,6 @@ public class Sensors {
 		//cameraServo.set(0.2);
 	}
 	
-	public static void setCurrentPos() {
-		prevAngle = gyro.getAngle();
-	}
-	
-	public static double getRelativeAngle() {
-		return gyro.getAngle() - prevAngle;
-	}
-	
 	public static double getLeftDistance() {
 		return leftEncoder.getDistance();
 	}
@@ -84,10 +71,6 @@ public class Sensors {
 	public static void resetEncoders() {
 		leftEncoder.reset();
 		rightEncoder.reset();
-	}
-	
-	public static boolean haveGear() {
-		return true;
 	}
 	
 	public static void updateSmartDashboard(){
