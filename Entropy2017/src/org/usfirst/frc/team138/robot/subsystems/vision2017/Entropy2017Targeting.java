@@ -17,12 +17,17 @@ import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Entropy2017Targeting extends Thread {
+	private static final boolean DEBUG_ENABLED = false;
+	
 	// Widget Name
 	public static final String NAME = "ENTROPY-2017-TARGETING 2:18:2017";
 	
 	// Random unique identifier for the camera - leave this - otherwise, you will get a warning
 	private static final long serialVersionUID = -412351776843653585L;
 	
+	// Paths
+	static String rootFolder = "C:\\Users\\Team138\\Vision2017";
+	private String  SmartDashboardPath = "/SmartDashboard/extensions/";
 	
 	enum Parameters	{
 		lowHue,
@@ -47,46 +52,39 @@ public class Entropy2017Targeting extends Thread {
 		SaveProcessed
 	};
 	
-	static String rootFolder = "C:\\Users\\Team138\\Vision2017";
-	
-	// Network tables
-	private NetworkTable table;
+	public class TargetInformation{
+		public String targetType = "peg"; //"peg" or "highGoal"
+		public boolean targetFound = false;
+		public long highGoalx = 0;
+		public long highGoaly = 0;
+		public long highGoalxRange = 0;
+		public long pegyHeight = 0;
+		public long pegxSpace = 0;
+		public long pegx = 0;
+		public long pegy = 0;
+		public double correctionAngle = 0;
+	}
 	
 	// Keep track of frame number and processing results
 	private long m_frameNumber = 0;
-
-	private long highGoalx = 1000;
-	private long highGoaly = 1000;
-	private long highGoalxRange = 1000;
-	
-	private long pegyheight = 1000;
-	private long pegxspace = 1000;
-	private long pegx = 1000;
-	private long pegy = 1000;
-	private ArrayList<Double> angleList = new ArrayList<Double>();
-	
-	
-	// Image Results to send back to robot
-	// NOTE:  By convention, data in the array is as follows:
-	//       imgResults[0] is frameNumber
-	//       imgResults[1] is pegx   (1000.0 is a "magic number" meaning no target found)
-	//       imgResults[2] is pegxspace   (1000.0 is a "magic number" meaning no target found)
-	//       imgResults[3] is pegyheight   (1000.0 is a "magic number" meaning no target found)
-	//       imgResults[4] is highGoalx (1000.0 is a "magic number" meaning no target found)
-	//       imgResults[5] is highGoalxRange (1000.0 is a "magic number" meaning no target found)
+	private ArrayList<TargetInformation> infoList = new ArrayList<TargetInformation>();
 	
 	// Date object for saving images
 	private Date m_lastSnapshotTime;
 	private Date m_lastRawSnapshotTime;
-	//private Date m_lastProcSnapshotTime;
-	
-	//private ParameterFile m_pt;
+
 	private Properties theProperties;
+
+	private int framesToProcess = 0;
+	private String targetProcessingType = "peg";
 	
-	private String  SmartDashboardPath = "/SmartDashboard/extensions/";
-	
-	// test Main function to process a folder with images
-	int framesToProcess = 0;
+	public Entropy2017Targeting() {
+		m_frameNumber = 0;
+		m_lastSnapshotTime = new Date();
+		m_lastRawSnapshotTime = new Date();
+		
+		loadParameters();
+	}
 	
 	public void run() {        
         CvSink cvSink = CameraServer.getInstance().getVideo();        
@@ -102,23 +100,22 @@ public class Entropy2017Targeting extends Thread {
         }
 	}
 	
-	public ArrayList<Double> getCorrectionAngles()
+	public ArrayList<TargetInformation> getTargetInformation()
 	{
 		@SuppressWarnings("unchecked")
-		ArrayList<Double> temp = (ArrayList<Double>) angleList.clone();
-		angleList.clear();
+		ArrayList<TargetInformation> temp = (ArrayList<TargetInformation>) infoList.clone();
+		infoList.clear();
 		return temp;
 	}
 	
-	public void processFrames(int numFrames)
+	public void processFrames(int numFrames, String targetType)
 	{
 		framesToProcess = numFrames;
+		targetProcessingType = targetType;
 	}
 	
 	public static void main(String[] args)
 	{
-//		
-//		
 //		String inputFolder = rootFolder + "\\LED Peg";
 //		
 //		String outputFolder = rootFolder + "\\LEDPeg_output";
@@ -145,72 +142,47 @@ public class Entropy2017Targeting extends Thread {
 //		//imageProcessor.disconnect();
 //		System.out.println("Done.");
 	}
-	
-	public Entropy2017Targeting() {
-		m_frameNumber = 0;
-		m_lastSnapshotTime = new Date();
-		m_lastRawSnapshotTime = new Date();
-		
-		loadParameters();
-	}
-	
-	Mat outputImage;
+
 	protected void processImage(Mat m) {
-		
-		// default all returns to robot to no value
-		pegx = 1000;
-		pegy = 1000;
-		pegyheight = 1000;
-		pegxspace = 1000;
-		
-		highGoalx = 1000;
-		highGoaly = 1000;
-		highGoalxRange = 1000;
-		
-		//save the raw image
-		//saveRawImage(m);
-		
-		// increment the frameNumber
 		m_frameNumber++;
 		
 		if ( theProperties == null ) {
 			//m_error = "parameter table missing";
 			return; 
 		}
+		
+		// Blank info struct to store target information
+		TargetInformation targetInfo = new TargetInformation();
+		targetInfo.targetType = targetProcessingType;
+	
 		Mat step1 = getHSVThreshold(m);
 		
-		findPeg(step1);
-		
-		// TODO: Debug later
-		//findHighGoal(step1);
-		
-		int width = m.cols();
-		if (pegx != 1000)
+		if (targetInfo.targetType == "peg")
 		{
-			angleList.add((double)((pegx-width/2))/width * 60.0);
+			findPeg(step1, targetInfo);
+			if (targetInfo.targetFound)
+			{
+				drawTarget(m, targetInfo.pegx, targetInfo.pegy, true);
+			}
+		}
+		else if (targetInfo.targetType == "highGoal")
+		{
+			findHighGoal(step1, targetInfo);
+			if (targetInfo.targetFound)
+			{
+				drawTarget(m, targetInfo.highGoalx, targetInfo.highGoaly, false);
+			}
 		}
 		
-		
-				
-		if (pegx < 1000) {
-			drawTarget(m, pegx, pegy,true);
-		}
-		
-		if (highGoalx < 1000) {
-			drawTarget(m, highGoalx, highGoaly,false);
-		}
-		
-		outputImage = m;
-		
+		infoList.add(targetInfo);		
 		return;
     }
-	
+
 	/**
 	 * Process pixels in the correct color range and cleanup the image
 	 * @param m Input image
 	 * @return Cleaned up image
 	 */
-	
 	private Mat getHSVThreshold(Mat m) {
 		
 		// convert BGR values to HSV values
@@ -238,75 +210,7 @@ public class Entropy2017Targeting extends Thread {
 		return grey;
 	}
 	
-	/**
-	 * Debug routine to print peaks
-	 * @param name
-	 * @param peaks
-	 */
-	private static void printPeaks(String name,List<PeakLoc> peaks) {
-		System.out.println("Peaks for " + name);
-		for (int k=0;k<peaks.size();k++) {
-			System.out.println("peak[" + k + "]= " + peaks.get(k).getStart() + " , " + peaks.get(k).getStop());
-		}
-		
-		
-	}
-	
-	/**
-	 * Sum the rows or columns of a matrix
-	 * @param m input 2D matrix as unsigned bytes
-	 * @param byRow true is to sumy the matrix by row; otherwise by colums
-	 * @return integer array of sums
-	 */
-	private static long[] sums(Mat m,boolean byRow) {
-		
-		int rows = m.rows();
-		int cols = m.cols();
-		byte[] data = new byte[rows*cols];
-		long[] retSums = null;
-		
-		int status = m.get(0, 0,data);
-		
-		long total = 0;
-		for (int k=0;k<data.length;k++) {
-			total += Byte.toUnsignedInt(data[k]);
-		}
-		
-		if (byRow) {
-			retSums = new long[cols];
-			for (int col=0;col<cols;col++) {
-				retSums[col] = 0;
-				for (int row=0;row<rows;row++) {
-					int k = row*cols+col;
-					retSums[col] += Byte.toUnsignedInt(data[k]);
-				}
-			}
-		}
-		else {
-			retSums = new long[rows];
-			for (int row=0;row<rows;row++) {
-				retSums[row] = 0;
-				for (int col=0;col<cols;col++) {
-					int k = row*cols+col;
-					retSums[row] += Byte.toUnsignedInt(data[k]);
-				}
-			}
-		}
-		
-//		System.out.println("" + m.rows()+ "  " + m.cols());
-//		System.out.println(status);
-//		System.out.println(total);
-		int total1 = 0;
-		for (int k=0;k<retSums.length;k++) {
-			total1+= retSums[k];
-		}
-		//System.out.println(total1);
-	
-		return retSums;
-		
-	}
-	private void findPeg(Mat m){
-		
+	private void findPeg(Mat m, TargetInformation output){
 	    long[] xsums = sums(m,true);
 	    long[] ysums = sums(m,false);
 	    
@@ -314,46 +218,31 @@ public class Entropy2017Targeting extends Thread {
 	    List<PeakLoc> xpeaks = findPeaks(xsums);
 		 
 		//locate peaks (all of them) in sums, for peg it will be 2 x peaks, 1 y peak
-	    if ((xpeaks.size() == 2) && (ypeaks.size() >0)){
-	    	pegx = (xpeaks.get(1).getStart() + xpeaks.get(0).getStop()) /2;
-	    	pegxspace = xpeaks.get(1).getStart() - xpeaks.get(0).getStop();
-	    	pegyheight = ypeaks.get(0).getStop() - ypeaks.get(0).getStart();
-	    	pegy = ypeaks.get(0).getStart() + pegyheight/2;
-	    	//System.out.println("pegx = " + pegx + " , " + "pegxspace = " + pegxspace + " , " + "pegyheight = " + pegyheight); 
+	    if ((xpeaks.size() == 2) && (ypeaks.size() > 0)){
+	    	output.targetFound = true;
+	    	output.pegx = (xpeaks.get(1).getStart() + xpeaks.get(0).getStop()) /2;
+	    	output.pegxSpace = xpeaks.get(1).getStart() - xpeaks.get(0).getStop();
+	    	output.pegyHeight = ypeaks.get(0).getStop() - ypeaks.get(0).getStart();
+	    	output.pegy = ypeaks.get(0).getStart() + output.pegyHeight/2;
+	    	output.correctionAngle = (double)((output.pegx-m.cols()/2))/m.cols() * 60.0;
+	    	if (DEBUG_ENABLED)
+	    	{
+	    		System.out.println("pegx = " + output.pegx + " , " + "pegxspace = " + 
+	    			output.pegxSpace + " , " + "pegyheight = " + output.pegyHeight); 
+	    	}
 	    }
-	    
-	}
-	/**
-	 * 
-	 * @param m
-	 * @param x
-	 * @param y
-	 */
-	private void drawTarget(Mat m, long x, long y,boolean peg){
-		
-		int size = 40;
-		Scalar color;
-		if (peg) {
-			color = new Scalar(0,0,255);
-		}
-		else {
-			color = new Scalar(0,255,255);
-		}
-		
-		Imgproc.line(m, new Point(x-size,y), new Point(x+size,y), color,2);
-		Imgproc.line(m, new Point(x,y-size), new Point(x,y+size), color,2);
-		for (int k =0;k<4;k++) {
-			Imgproc.circle(m, new Point(x,y), (k+1)*size/4, color);
-		}
-		
+	    else
+	    {
+	    	output.targetFound = false;
+	    }
+	    return;
 	}
 	
 	/**
 	 * locate the high goal
 	 * @param m
 	 */
-	private void findHighGoal(Mat m) {
-		
+	private void findHighGoal(Mat m, TargetInformation output) {
 		/*
 		 * private long highGoalx = 1000;
 	       private long highGoaly = 1000;
@@ -400,23 +289,108 @@ public class Entropy2017Targeting extends Thread {
 		    	double hightRatioTol = 0.25;
 		    	double spacetRatioTol = 0.5;
 		    	if ((Math.abs(heightRatio-2.0) <= hightRatioTol) && ((Math.abs(spaceRatio-1.0) <= spacetRatioTol))) {
-		    		
 		    		// save targeting info and quit
-		    		highGoalx = (xstop+xstart)/2;
-		    		highGoaly = ypeaks.get(0).getStop();
-		    		highGoalxRange = xstop-xstart;
+		    		output.highGoalx = (xstop+xstart)/2;
+		    		output.highGoaly = ypeaks.get(0).getStop();
+		    		output.highGoalxRange = xstop-xstart;
 		    		break;
-		    		
-		   
 		    	} // size matches
-		    	
 		    } // #peaks in y is 2
-		    
-		    
 	    } // for each peak in x
-		
+	}
 	
+	/**
+	 * 
+	 * @param m
+	 * @param x
+	 * @param y
+	 */
+	private void drawTarget(Mat m, long x, long y,boolean peg){
 		
+		int size = 40;
+		Scalar color;
+		if (peg) {
+			color = new Scalar(0,0,255);
+		}
+		else {
+			color = new Scalar(0,255,255);
+		}
+		
+		Imgproc.line(m, new Point(x-size,y), new Point(x+size,y), color,2);
+		Imgproc.line(m, new Point(x,y-size), new Point(x,y+size), color,2);
+		for (int k =0;k<4;k++) {
+			Imgproc.circle(m, new Point(x,y), (k+1)*size/4, color);
+		}
+		
+	}
+	
+	/**
+	 * Sum the rows or columns of a matrix
+	 * @param m input 2D matrix as unsigned bytes
+	 * @param byRow true is to sumy the matrix by row; otherwise by colums
+	 * @return integer array of sums
+	 */
+	private static long[] sums(Mat m,boolean byRow) {
+		
+		int rows = m.rows();
+		int cols = m.cols();
+		byte[] data = new byte[rows*cols];
+		long[] retSums = null;
+		
+		int status = m.get(0, 0,data);
+		
+		long total = 0;
+		for (int k=0;k<data.length;k++) {
+			total += Byte.toUnsignedInt(data[k]);
+		}
+		
+		if (byRow) {
+			retSums = new long[cols];
+			for (int col=0;col<cols;col++) {
+				retSums[col] = 0;
+				for (int row=0;row<rows;row++) {
+					int k = row*cols+col;
+					retSums[col] += Byte.toUnsignedInt(data[k]);
+				}
+			}
+		}
+		else {
+			retSums = new long[rows];
+			for (int row=0;row<rows;row++) {
+				retSums[row] = 0;
+				for (int col=0;col<cols;col++) {
+					int k = row*cols+col;
+					retSums[row] += Byte.toUnsignedInt(data[k]);
+				}
+			}
+		}
+		
+		int total1 = 0;
+		for (int k=0; k < retSums.length; k++) {
+			total1 += retSums[k];
+		}
+		
+		if (DEBUG_ENABLED)
+		{
+			System.out.println("" + m.rows()+ "  " + m.cols());
+			System.out.println(status);
+			System.out.println(total);
+			System.out.println(total1);
+		}
+	
+		return retSums;
+	}
+	
+	/**
+	 * Debug routine to print peaks
+	 * @param name
+	 * @param peaks
+	 */
+	private static void printPeaks(String name,List<PeakLoc> peaks) {
+		System.out.println("Peaks for " + name);
+		for (int k=0;k<peaks.size();k++) {
+			System.out.println("peak[" + k + "]= " + peaks.get(k).getStart() + " , " + peaks.get(k).getStop());
+		}
 	}
 	
 	/**
@@ -444,7 +418,6 @@ public class Entropy2017Targeting extends Thread {
 		public void setStop(long stop) {
 			this.stop = stop;
 		}
-		
 	}
 	
 	public static void main1(String[] args) {
@@ -461,10 +434,9 @@ public class Entropy2017Targeting extends Thread {
 		
 		List<PeakLoc> peaks = findPeaks(testData);
 		System.out.println(peaks);
-		
 	}
+	
 	private static List<PeakLoc> findPeaks(long[] sums,long minWidth) {
-		
 		long maxVal = Arrays.stream(sums).max().getAsLong();
 		ArrayList<PeakLoc> ret = new ArrayList<PeakLoc>();
 		boolean looking = true;
@@ -496,17 +468,8 @@ public class Entropy2017Targeting extends Thread {
 	}
 	
 	private static List<PeakLoc> findPeaks(long[] sums) {
-		
-		List<PeakLoc> ret = findPeaks(sums,3);
-		
-		return ret;
+		return findPeaks(sums, 3);
 	}
-	
-	private void updateNetworkTables(){
-		
-	}
-	
-
 
 	private void saveProcessedImage(Mat m) {
 		//if (m_pt.get(Parameters.SaveProcessed.ordinal()) > 0.5) {
