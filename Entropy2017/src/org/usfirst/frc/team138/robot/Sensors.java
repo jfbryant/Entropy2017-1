@@ -38,6 +38,11 @@ public class Sensors {
 		cameraProcessor.start();
 	}
 	
+	public static double distanceFromWall()
+	{
+		return 0;
+	}
+	
 	public static void targetingCameraMode()
 	{
 		camera.setExposureManual(0);

@@ -1,5 +1,7 @@
 package org.usfirst.frc.team138.robot.commands;
 
+import org.usfirst.frc.team138.robot.Robot;
+import edu.wpi.first.wpilibj.command.CommandGroup;
 import java.util.ArrayList;
 import org.usfirst.frc.team138.robot.Sensors;
 import org.usfirst.frc.team138.robot.subsystems.vision2017.Entropy2017Targeting;
@@ -9,6 +11,7 @@ import edu.wpi.first.wpilibj.command.Command;
 public class GearCorrect extends Command {
 	
 	Command driveCommand;
+	boolean isDone = false;
 	int framesToAverage;
 	ArrayList<Entropy2017Targeting.TargetInformation> infoList = new ArrayList<Entropy2017Targeting.TargetInformation>();
 	
@@ -46,19 +49,31 @@ public class GearCorrect extends Command {
 				}
 				else
 				{
-					driveCommand = new AutoDrive(0);
+					if (getGroup() != null)
+					{
+						getGroup().cancel();
+					}
+					else
+					{
+						isDone = true;	
+					}
 				}
 				
 				driveCommand.start();
 			}
 		}
+		else
+		{
+			isDone = !driveCommand.isRunning();
+		}
 	}
 
 	protected boolean isFinished() {
-		return !driveCommand.isRunning();
+		return isDone || (timeSinceInitialized() > 2 && Robot.mode == "teleop");
 	}
 
 	protected void end() {
+		Sensors.cameraProcessor.cancelProcessing();
 		Sensors.standardCameraMode();
 	}
 

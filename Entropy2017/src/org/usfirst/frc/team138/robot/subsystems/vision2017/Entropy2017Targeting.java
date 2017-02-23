@@ -74,6 +74,7 @@ public class Entropy2017Targeting extends Thread {
 
 	private int framesToProcess = 0;
 	private String targetProcessingType = "peg";
+	private boolean isCancelled = false;
 	
 	public Entropy2017Targeting() {
 		m_frameNumber = 0;
@@ -90,9 +91,18 @@ public class Entropy2017Targeting extends Thread {
         while(!Thread.interrupted()) {
         	if (framesToProcess > 0)
         	{
-        		cvSink.grabFrame(source);
-                processImage(source);
-                framesToProcess--;
+        		if (!isCancelled)
+        		{
+        			cvSink.grabFrame(source);
+                    processImage(source);
+                    framesToProcess--;
+        		}
+        		else
+        		{
+        			framesToProcess = 0;
+        			getTargetInformation();
+        			isCancelled = false;
+        		}
         	}
         }
 	}
@@ -109,6 +119,11 @@ public class Entropy2017Targeting extends Thread {
 	{
 		framesToProcess = numFrames;
 		targetProcessingType = targetType;
+	}
+	
+	public void cancelProcessing()
+	{
+		isCancelled = true;
 	}
 	
 	public static void main(String[] args)

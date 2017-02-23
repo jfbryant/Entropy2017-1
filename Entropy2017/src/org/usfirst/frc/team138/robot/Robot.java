@@ -31,6 +31,8 @@ public class Robot extends IterativeRobot {
     
     // Commands
     AutonomousCommand autonomousCommand;
+    
+    public static String mode; // "auto" or "teleop"
 
     /**
      * This function is run when the robot is first started up and should be
@@ -88,6 +90,7 @@ public class Robot extends IterativeRobot {
 	 * or additional comparisons to the switch structure below with additional strings & commands.
 	 */
     public void autonomousInit() {
+    	mode = "auto";
         autonomousCommand = new AutonomousCommand(teamChooser.getSelected(), 
         		startPosChooser.getSelected(),
         		autoModeChooser.getSelected());
@@ -103,6 +106,7 @@ public class Robot extends IterativeRobot {
     }
 
     public void teleopInit() {
+    	mode = "teleop";
         if (autonomousCommand != null) {
         	autonomousCommand.cancel();
         }
