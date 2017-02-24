@@ -9,7 +9,11 @@ public class AutonomousCommand extends CommandGroup {
 		// Test Mode
 		if (autoMode == "test")
 		{
+			addSequential(new GearCorrect(4));
 			addSequential(new AutoDrive(5));
+			addSequential(new GearCorrect(4));
+			addSequential(new AutoDrive(5));
+			addSequential(new GearCorrect(4));
 		}
 		
 		// This auto mode crosses the line and that's it. This is the default

@@ -106,7 +106,6 @@ public class AutoDrive extends Command implements PIDOutput{
 			else
 			{
 				Robot.drivetrain.drive(driveSpeed, rotateToAngleRate);
-				System.out.println("Rate: " + rotateToAngleRate);
 				
 				if (lastRightDistance == Sensors.getRightDistance() || lastLeftDistance == Sensors.getLeftDistance()) 
 				{
@@ -133,7 +132,6 @@ public class AutoDrive extends Command implements PIDOutput{
 	}
 
 	protected void end() {
-		System.out.println("Ended");
 	}
 
 	protected void interrupted() {

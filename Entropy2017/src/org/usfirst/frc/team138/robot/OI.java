@@ -29,7 +29,7 @@ public class OI {
     	toggleClawButton.whenPressed(new SetClawPosition());
     	toggleRopeGrabberButton.whenPressed(new GraspRope());
     	shootButton.whileHeld(new Shoot());
-    	autoGearPlaceButton.whenPressed(new AutoGearPlace());
+    	autoGearPlaceButton.whenPressed(new GearCorrect(4));
     }
     
 	public double getMoveSpeed()

@@ -5,6 +5,7 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -17,6 +18,7 @@ public class Sensors {
 	static UsbCamera camera;
 	public static Entropy2017Targeting cameraProcessor;
 	//static Servo cameraServo = new Servo(RobotMap.CAMERA_TILT_PORT);
+	static Relay gearCameraLight = new Relay(RobotMap.GEAR_CAMERA_LIGHT_PORT);
 	
 	public static void initialize() {
         gyro = new ADXRS450_Gyro();
@@ -36,11 +38,18 @@ public class Sensors {
     	
     	cameraProcessor = new Entropy2017Targeting();
 		cameraProcessor.start();
+		
+		turnOnGearLight();
 	}
 	
-	public static double distanceFromWall()
+	public static void turnOnGearLight()
 	{
-		return 0;
+		gearCameraLight.set(Relay.Value.kForward);
+	}
+	
+	public static void turnOffGearLight()
+	{
+		gearCameraLight.set(Relay.Value.kOff);
 	}
 	
 	public static void targetingCameraMode()
@@ -51,8 +60,8 @@ public class Sensors {
 	
 	public static void standardCameraMode()
 	{
-		camera.setExposureAuto();
-        camera.setBrightness(50);
+		camera.setBrightness(90);
+		camera.setExposureManual(20);
 	}
 	
 	public static void gearAcqTiltAngle()

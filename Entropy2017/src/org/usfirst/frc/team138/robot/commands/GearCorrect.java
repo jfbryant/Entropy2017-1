@@ -1,7 +1,6 @@
 package org.usfirst.frc.team138.robot.commands;
 
 import org.usfirst.frc.team138.robot.Robot;
-import edu.wpi.first.wpilibj.command.CommandGroup;
 import java.util.ArrayList;
 import org.usfirst.frc.team138.robot.Sensors;
 import org.usfirst.frc.team138.robot.subsystems.vision2017.Entropy2017Targeting;
@@ -20,8 +19,9 @@ public class GearCorrect extends Command {
 	}
 
 	protected void initialize() {
-		Sensors.targetingCameraMode();
 		Sensors.cameraProcessor.processFrames(framesToAverage, "peg");
+		isDone = false;
+		driveCommand = null;
 	}
 
 	protected void execute() {
@@ -36,7 +36,7 @@ public class GearCorrect extends Command {
 				{
 					if (info.targetFound)
 					{
-						cumulation += info.correctionAngle;
+						cumulation += info.pegx;
 					}
 					else
 					{
@@ -45,11 +45,15 @@ public class GearCorrect extends Command {
 				}
 				if (targetsFound > 0)
 				{
-					driveCommand = new AutoDrive(cumulation / targetsFound);
+					//driveCommand = new AutoDrive(cumulation / targetsFound);
+					isDone = true;
+					System.out.println("Average Peg X: " + cumulation / targetsFound);
+					System.out.println("Gyro Angle: " + Sensors.gyro.getAngle());
+					driveCommand = new Wait(0);
 				}
 				else
 				{
-					if (getGroup() != null)
+					if (getGroup() != null && Robot.mode == "teleop")
 					{
 						getGroup().cancel();
 					}
@@ -73,11 +77,11 @@ public class GearCorrect extends Command {
 	}
 
 	protected void end() {
-		Sensors.cameraProcessor.cancelProcessing();
-		Sensors.standardCameraMode();
+		infoList.clear();
 	}
 
 	protected void interrupted() {
+		Sensors.cameraProcessor.cancelProcessing();
 		end();
 	}
 

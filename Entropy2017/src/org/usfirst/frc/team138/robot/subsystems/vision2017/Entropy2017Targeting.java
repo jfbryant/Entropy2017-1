@@ -1,6 +1,7 @@
 package org.usfirst.frc.team138.robot.subsystems.vision2017;
-import org.opencv.imgproc.Imgproc;
 
+import org.opencv.imgproc.Imgproc;
+import org.usfirst.frc.team138.robot.Sensors;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.DecimalFormat;
@@ -14,6 +15,8 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.CameraServer;
 
 public class Entropy2017Targeting extends Thread {
+	private static final double angleConstant = 20.0;
+	
 	private static final boolean DEBUG_OUTPUT_ENABLED = false;
 	
 	// Widget Name
@@ -75,6 +78,7 @@ public class Entropy2017Targeting extends Thread {
 	private int framesToProcess = 0;
 	private String targetProcessingType = "peg";
 	private boolean isCancelled = false;
+	private boolean done = false;
 	
 	public Entropy2017Targeting() {
 		m_frameNumber = 0;
@@ -88,8 +92,18 @@ public class Entropy2017Targeting extends Thread {
         CvSink cvSink = CameraServer.getInstance().getVideo();        
         Mat source = new Mat();
         
-        while(!Thread.interrupted()) {
-        	if (framesToProcess > 0)
+        while(!done) {
+        	synchronized(this)
+        	{
+        		try {
+					this.wait();
+				} catch (InterruptedException e) {}
+	        	try {
+					this.wait(50);
+				} catch (InterruptedException e) {}
+        	}
+        	
+        	while (framesToProcess > 0)
         	{
         		if (!isCancelled)
         		{
@@ -104,7 +118,14 @@ public class Entropy2017Targeting extends Thread {
         			isCancelled = false;
         		}
         	}
+        	Sensors.standardCameraMode();
         }
+	}
+	
+	public void shutdownThread()
+	{
+		done = true;
+		this.notify();
 	}
 	
 	public ArrayList<TargetInformation> getTargetInformation()
@@ -117,13 +138,21 @@ public class Entropy2017Targeting extends Thread {
 	
 	public void processFrames(int numFrames, String targetType)
 	{
+		Sensors.targetingCameraMode();
 		framesToProcess = numFrames;
 		targetProcessingType = targetType;
+		synchronized(this)
+		{
+			this.notify();
+		}
 	}
 	
 	public void cancelProcessing()
 	{
-		isCancelled = true;
+		if (framesToProcess > 0)
+		{
+			isCancelled = true;
+		}
 	}
 	
 	public static void main(String[] args)
@@ -236,7 +265,7 @@ public class Entropy2017Targeting extends Thread {
 	    	output.pegxSpace = xpeaks.get(1).getStart() - xpeaks.get(0).getStop();
 	    	output.pegyHeight = ypeaks.get(0).getStop() - ypeaks.get(0).getStart();
 	    	output.pegy = ypeaks.get(0).getStart() + output.pegyHeight/2;
-	    	output.correctionAngle = (double)((output.pegx-m.cols()/2))/m.cols() * 60.0;
+	    	output.correctionAngle = (double)((output.pegx - m.cols() / 2)) / angleConstant;
 	    	if (DEBUG_OUTPUT_ENABLED)
 	    	{
 	    		System.out.println("pegx = " + output.pegx + " , " + "pegxspace = " + 
