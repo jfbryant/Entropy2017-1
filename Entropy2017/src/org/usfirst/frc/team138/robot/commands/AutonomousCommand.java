@@ -10,10 +10,6 @@ public class AutonomousCommand extends CommandGroup {
 		if (autoMode == "test")
 		{
 			addSequential(new GearCorrect(4));
-			addSequential(new AutoDrive(5));
-			addSequential(new GearCorrect(4));
-			addSequential(new AutoDrive(5));
-			addSequential(new GearCorrect(4));
 		}
 		
 		// This auto mode crosses the line and that's it. This is the default
@@ -21,11 +17,11 @@ public class AutonomousCommand extends CommandGroup {
 		{
 			if (startPos == "middle")
 			{
-				addSequential(new AutoDrive(-0.6, 65));
+				addSequential(new AutoDrive(0.6, 65));
 			}
 			else
 			{
-				addSequential(new AutoDrive(-0.6, 90));
+				addSequential(new AutoDrive(0.6, 90));
 			}
 		}
 		
@@ -34,37 +30,48 @@ public class AutonomousCommand extends CommandGroup {
 		{
 			if (startPos == "left")
 			{
-				addSequential(new AutoDrive(-0.7, 96));
-				addSequential(new AutoDrive(30));
-				addSequential(new Wait(0.4));
-				addSequential(new GearCorrect(10));
-				addSequential(new AutoDrive(-0.6, 7));
+				addSequential(new AutoDrive(0.7, 84));
+				if (team == "red")
+				{
+					addSequential(new AutoDrive(52.5));
+				}
+				if (team == "blue")
+				{
+					addSequential(new AutoDrive(-52.5));
+				}
+				addSequential(new GearCorrect(4));
+				addSequential(new AutoDrive(0.6, 12));
 				addSequential(new PushGear());
 				addSequential(new PushGear());
-				addSequential(new AutoDrive(0.7, 12));
+				addSequential(new AutoDrive(-0.7, 12));
 			}
 			if (startPos == "middle")
 			{
-				addSequential(new AutoDrive(-0.7, 65));
-				addSequential(new Wait(0.4));
-				addSequential(new GearCorrect(10));
-				addSequential(new AutoDrive(-0.6, 4));
+				addSequential(new AutoDrive(0.7, 50));
+				addSequential(new GearCorrect(4));
+				addSequential(new AutoDrive(0.6, 19));
 				addSequential(new SetClawPosition(true));
 				addSequential(new PushGear());
 				addSequential(new PushGear());
-				addSequential(new AutoDrive(0.7, 15));
+				addSequential(new AutoDrive(-0.7, 15));
 				addSequential(new SetClawPosition(false));
 			}
 			if (startPos == "right")
 			{
-				addSequential(new AutoDrive(-0.7, 86));
-				addSequential(new AutoDrive(-30));
-				addSequential(new Wait(0.4));
-				addSequential(new GearCorrect(10));
-				addSequential(new AutoDrive(-0.6, 30));
+				addSequential(new AutoDrive(0.7, 86));
+				if (team == "red")
+				{
+					addSequential(new AutoDrive(-52.5));
+				}
+				if (team == "blue")
+				{
+					addSequential(new AutoDrive(52.5));
+				}
+				addSequential(new GearCorrect(4));
+				addSequential(new AutoDrive(0.6, 30));
 				addSequential(new PushGear());
 				addSequential(new PushGear());
-				addSequential(new AutoDrive(0.7, 12));
+				addSequential(new AutoDrive(-0.7, 12));
 			}
 			
 			// This mode then shoots fuel into the goal depending on team and start position

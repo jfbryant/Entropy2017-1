@@ -46,6 +46,7 @@ public class AutoDrive extends Command implements PIDOutput{
 		rotateInPlace = false;
 		driveSpeed = speedArg;
 		driveDistance = distanceArg;
+		turnController = new PIDController(kPDrive, kI, kD, Sensors.gyro, this);
 	}
 	
 	//rotates to an angle
@@ -53,13 +54,14 @@ public class AutoDrive extends Command implements PIDOutput{
 		requires(Robot.drivetrain);
 		rotateInPlace = true;
 		targetAngle = angle;
+		turnController = new PIDController(kPRotate, kI, kD, Sensors.gyro, this);
 	}
 
-	protected void initialize() {
+	public void initialize() {
+		System.out.println("Start AutoDrive");
 		Sensors.resetEncoders();
 		Sensors.gyro.reset();
 		
-		turnController = new PIDController(kPRotate, kI, kD, Sensors.gyro, this);
 		turnController.setAbsoluteTolerance(ToleranceDegrees);         
 	    turnController.setOutputRange(-1.0, 1);
 	    turnController.setContinuous(true);
@@ -70,15 +72,16 @@ public class AutoDrive extends Command implements PIDOutput{
 		}
 		else 
 		{
-			turnController.setSetpoint(Sensors.gyro.getAngle());
+			turnController.setSetpoint(0);
 		}
 		turnController.enable();
 	}
 
-	protected void execute() {
+	public void execute() {
 		if (areMotorsStalled) 
 		{
 			Robot.drivetrain.drive(0.0, 0.0);
+			System.out.println("Stalled");
 		}
 		else
 		{
@@ -106,12 +109,13 @@ public class AutoDrive extends Command implements PIDOutput{
 			else
 			{
 				Robot.drivetrain.drive(driveSpeed, rotateToAngleRate);
+				System.out.println("driveSpeed:" + driveSpeed);
 				
 				if (lastRightDistance == Sensors.getRightDistance() || lastLeftDistance == Sensors.getLeftDistance()) 
 				{
 					if (stallCounter == 75) 
 					{
-						areMotorsStalled = true;
+						//areMotorsStalled = true;
 					}
 					stallCounter++;
 				}
@@ -127,11 +131,12 @@ public class AutoDrive extends Command implements PIDOutput{
 		}
 	}
 
-	protected boolean isFinished() {
+	public boolean isFinished() {
 		return isDone;
 	}
 
-	protected void end() {
+	public void end() {
+		System.out.println("Done AutoDrive");
 	}
 
 	protected void interrupted() {
@@ -157,7 +162,7 @@ public class AutoDrive extends Command implements PIDOutput{
 		}
 		else
 		{
-			rotateToAngleRate = output;
+			rotateToAngleRate =  output;
 		}		
 	}
 	

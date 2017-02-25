@@ -9,19 +9,22 @@ import edu.wpi.first.wpilibj.command.Command;
 
 public class GearCorrect extends Command {
 	
-	Command driveCommand;
+	AutoDrive driveCommand;
 	boolean isDone = false;
 	int framesToAverage;
+	int counter = 0;
 	ArrayList<Entropy2017Targeting.TargetInformation> infoList = new ArrayList<Entropy2017Targeting.TargetInformation>();
 	
 	public GearCorrect(int numFrames){
 		framesToAverage = numFrames;
+		this.setInterruptible(false);
 	}
 
 	protected void initialize() {
 		Sensors.cameraProcessor.processFrames(framesToAverage, "peg");
 		isDone = false;
 		driveCommand = null;
+		counter = 0;
 	}
 
 	protected void execute() {
@@ -31,12 +34,14 @@ public class GearCorrect extends Command {
 			if (infoList.size() == framesToAverage)
 			{
 				double cumulation = 0;
+				double cumulation2 = 0;
 				int targetsFound = framesToAverage;
 				for (Entropy2017Targeting.TargetInformation info : infoList)
 				{
 					if (info.targetFound)
 					{
-						cumulation += info.pegx;
+						cumulation2 += info.pegx;
+						cumulation += info.correctionAngle;
 					}
 					else
 					{
@@ -45,38 +50,44 @@ public class GearCorrect extends Command {
 				}
 				if (targetsFound > 0)
 				{
-					//driveCommand = new AutoDrive(cumulation / targetsFound);
-					isDone = true;
-					System.out.println("Average Peg X: " + cumulation / targetsFound);
-					System.out.println("Gyro Angle: " + Sensors.gyro.getAngle());
-					driveCommand = new Wait(0);
+					driveCommand = new AutoDrive(cumulation / targetsFound);
+					System.out.println("Angle: " + cumulation / targetsFound);
+					System.out.println("Average Peg X: " + cumulation2 / targetsFound);
+					
+					driveCommand.initialize();
 				}
 				else
 				{
 					if (getGroup() != null && Robot.mode == "teleop")
 					{
-						getGroup().cancel();
+						//getGroup().cancel();
 					}
 					else
 					{
-						isDone = true;	
+						//isDone = true;	
 					}
 				}
-				
-				driveCommand.start();
 			}
 		}
 		else
 		{
-			isDone = !driveCommand.isRunning();
+			driveCommand.execute();
 		}
 	}
 
 	protected boolean isFinished() {
-		return isDone || (timeSinceInitialized() > 2 && Robot.mode == "teleop");
+		if (driveCommand != null)
+		{
+			return driveCommand.isFinished() || isDone;
+		}
+		else
+		{
+			return isDone;
+		}
 	}
 
 	protected void end() {
+		System.out.println("GearCorrect Ended");
 		infoList.clear();
 	}
 

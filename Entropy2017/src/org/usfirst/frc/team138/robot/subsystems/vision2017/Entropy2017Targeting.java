@@ -15,7 +15,7 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.CameraServer;
 
 public class Entropy2017Targeting extends Thread {
-	private static final double angleConstant = 20.0;
+	private static final double angleConstant = 17.0;
 	
 	private static final boolean DEBUG_OUTPUT_ENABLED = false;
 	
@@ -99,7 +99,7 @@ public class Entropy2017Targeting extends Thread {
 					this.wait();
 				} catch (InterruptedException e) {}
 	        	try {
-					this.wait(50);
+					this.wait(200);
 				} catch (InterruptedException e) {}
         	}
         	
