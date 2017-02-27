@@ -16,8 +16,7 @@ import org.usfirst.frc.team138.robot.commands.*;
  * directory.
  */
 public class Robot extends IterativeRobot {
-
-	// Interface
+	// Interface with players
 	public static OI oi;
     SendableChooser<String> teamChooser;
     SendableChooser<String> startPosChooser;
@@ -32,6 +31,7 @@ public class Robot extends IterativeRobot {
     // Commands
     AutonomousCommand autonomousCommand;
     
+    // Global constants
     public static String mode; // "auto" or "teleop"
 
     /**

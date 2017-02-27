@@ -21,7 +21,7 @@ public class GearCorrect extends Command {
 	}
 
 	protected void initialize() {
-		Sensors.cameraProcessor.processFrames(framesToAverage, "peg");
+		Sensors.cameraProcessor.processFrames(framesToAverage, true);
 		isDone = false;
 		driveCommand = null;
 		counter = 0;
@@ -33,15 +33,13 @@ public class GearCorrect extends Command {
 			infoList.addAll(Sensors.cameraProcessor.getTargetInformation());
 			if (infoList.size() == framesToAverage)
 			{
-				double cumulation = 0;
-				double cumulation2 = 0;
+				Entropy2017Targeting.TargetInformation cumulation = new Entropy2017Targeting.TargetInformation();
 				int targetsFound = framesToAverage;
 				for (Entropy2017Targeting.TargetInformation info : infoList)
 				{
 					if (info.targetFound)
 					{
-						cumulation2 += info.pegx;
-						cumulation += info.correctionAngle;
+						cumulation.add(info);
 					}
 					else
 					{
@@ -50,9 +48,10 @@ public class GearCorrect extends Command {
 				}
 				if (targetsFound > 0)
 				{
-					driveCommand = new AutoDrive(cumulation / targetsFound);
-					System.out.println("Angle: " + cumulation / targetsFound);
-					System.out.println("Average Peg X: " + cumulation2 / targetsFound);
+					driveCommand = new AutoDrive(cumulation.correctionAngle / targetsFound);
+					System.out.println("Correction Angle: " +  cumulation.correctionAngle / targetsFound);
+					System.out.println("Target Peg X: " + cumulation.aimX / targetsFound);
+					System.out.println("Real Peg X: " + cumulation.x / targetsFound);
 					
 					driveCommand.initialize();
 				}
@@ -60,11 +59,11 @@ public class GearCorrect extends Command {
 				{
 					if (getGroup() != null && Robot.mode == "teleop")
 					{
-						//getGroup().cancel();
+						getGroup().cancel();
 					}
 					else
 					{
-						//isDone = true;	
+						isDone = true;	
 					}
 				}
 			}

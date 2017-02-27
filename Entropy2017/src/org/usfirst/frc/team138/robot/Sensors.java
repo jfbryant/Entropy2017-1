@@ -15,10 +15,11 @@ public class Sensors {
 	static Encoder leftEncoder;
 	static Encoder rightEncoder;
 	
-	static UsbCamera camera;
-	public static Entropy2017Targeting cameraProcessor;
-	//static Servo cameraServo = new Servo(RobotMap.CAMERA_TILT_PORT);
+	static UsbCamera gearCamera;
+	//static Servo gearCameraServo = new Servo(RobotMap.CAMERA_TILT_PORT);
 	static Relay gearCameraLight = new Relay(RobotMap.GEAR_CAMERA_LIGHT_PORT);
+	static UsbCamera ropeAndShooterCamera;
+	public static Entropy2017Targeting cameraProcessor;
 	
 	public static void initialize() {
         gyro = new ADXRS450_Gyro();
@@ -31,47 +32,78 @@ public class Sensors {
     	rightEncoder.setDistancePerPulse(0.124);
     	resetEncoders();
     	
-    	camera = CameraServer.getInstance().startAutomaticCapture();
-        camera.setResolution(640, 480);
-        camera.setFPS(12);
-        System.out.println(camera.getBrightness());
+    	gearCamera = CameraServer.getInstance().startAutomaticCapture("Gear Feed", 0);
+        gearCamera.setResolution(640, 480);
+        gearCamera.setFPS(12);
+        
+        ropeAndShooterCamera = CameraServer.getInstance().startAutomaticCapture("Rope and Shooter Feed", 1);
+        ropeAndShooterCamera.setResolution(640, 480);
+        ropeAndShooterCamera.setFPS(12);
     	
-    	cameraProcessor = new Entropy2017Targeting();
+    	cameraProcessor = new Entropy2017Targeting(gearCamera, ropeAndShooterCamera);
 		cameraProcessor.start();
-		
-		turnOnGearLight();
 	}
 	
-	public static void turnOnGearLight()
+	public static void turnOnCameraLight(boolean gear)
 	{
-		gearCameraLight.set(Relay.Value.kForward);
+		if (gear)
+		{
+			gearCameraLight.set(Relay.Value.kForward);
+		}
+		else
+		{
+			gearCameraLight.set(Relay.Value.kForward);
+		}
 	}
 	
-	public static void turnOffGearLight()
+	public static void turnOffCameraLight(boolean gear)
 	{
-		gearCameraLight.set(Relay.Value.kOff);
+		if (gear)
+		{
+			gearCameraLight.set(Relay.Value.kOff);
+		}
+		else
+		{
+			gearCameraLight.set(Relay.Value.kOff);
+		}
 	}
 	
-	public static void targetingCameraMode()
+	public static void targetingCameraMode(boolean gear)
 	{
-		camera.setExposureManual(0);
-        camera.setBrightness(0);
+		if (gear)
+		{
+			gearCamera.setExposureManual(0);
+	        gearCamera.setBrightness(0);
+		}
+		else
+		{
+			ropeAndShooterCamera.setExposureManual(0);
+			ropeAndShooterCamera.setBrightness(0);
+		}
 	}
 	
-	public static void standardCameraMode()
+	public static void standardCameraMode(boolean gear)
 	{
-		camera.setBrightness(90);
-		camera.setExposureManual(20);
+		if (gear)
+		{
+			gearCamera.setBrightness(40);
+			gearCamera.setExposureAuto();
+		}
+		else
+		{
+			ropeAndShooterCamera.setBrightness(40);
+			ropeAndShooterCamera.setExposureAuto();
+		}
 	}
 	
 	public static void gearAcqTiltAngle()
 	{
-		//cameraServo.set(0.0);
+		//gearCameraServo.set(0.0);
 	}
 	
 	public static void gearPlaceTiltAngle()
 	{
-		//cameraServo.set(0.2);
+		//gearCameraServo.set(0.2);
 	}
 	
 	public static double getLeftDistance() {
