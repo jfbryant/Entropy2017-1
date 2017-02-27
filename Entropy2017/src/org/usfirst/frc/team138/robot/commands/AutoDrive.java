@@ -58,7 +58,6 @@ public class AutoDrive extends Command implements PIDOutput{
 	}
 
 	public void initialize() {
-		System.out.println("Start AutoDrive");
 		Sensors.resetEncoders();
 		Sensors.gyro.reset();
 		
@@ -109,12 +108,12 @@ public class AutoDrive extends Command implements PIDOutput{
 			else
 			{
 				Robot.drivetrain.drive(driveSpeed, rotateToAngleRate);
-				System.out.println("driveSpeed:" + driveSpeed);
 				
 				if (lastRightDistance == Sensors.getRightDistance() || lastLeftDistance == Sensors.getLeftDistance()) 
 				{
 					if (stallCounter == 75) 
 					{
+						isDone = true;
 						//areMotorsStalled = true;
 					}
 					stallCounter++;
@@ -136,7 +135,6 @@ public class AutoDrive extends Command implements PIDOutput{
 	}
 
 	public void end() {
-		System.out.println("Done AutoDrive");
 	}
 
 	protected void interrupted() {
@@ -146,7 +144,7 @@ public class AutoDrive extends Command implements PIDOutput{
 		output = -output;
 		if (rotateInPlace)
 		{
-			double minSpeed = 0.59;
+			double minSpeed = 0.7;
 			if (output > minSpeed|| output < -minSpeed)
 			{
 				rotateToAngleRate = output;

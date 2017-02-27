@@ -35,6 +35,7 @@ public class GearCorrect extends Command {
 			{
 				double cumulation = 0;
 				double cumulation2 = 0;
+				double cumulation3 = 0;
 				int targetsFound = framesToAverage;
 				for (Entropy2017Targeting.TargetInformation info : infoList)
 				{
@@ -42,6 +43,7 @@ public class GearCorrect extends Command {
 					{
 						cumulation2 += info.pegx;
 						cumulation += info.correctionAngle;
+						cumulation3 += info.pegxSpace;
 					}
 					else
 					{
@@ -53,25 +55,26 @@ public class GearCorrect extends Command {
 					driveCommand = new AutoDrive(cumulation / targetsFound);
 					System.out.println("Angle: " + cumulation / targetsFound);
 					System.out.println("Average Peg X: " + cumulation2 / targetsFound);
-					
-					driveCommand.initialize();
+					System.out.println("Pixels Wide: " + cumulation3 / targetsFound);
+					isDone = true;
+					//driveCommand.initialize();
 				}
 				else
 				{
 					if (getGroup() != null && Robot.mode == "teleop")
 					{
-						//getGroup().cancel();
+						getGroup().cancel();
 					}
 					else
 					{
-						//isDone = true;	
+						isDone = true;	
 					}
 				}
 			}
 		}
 		else
 		{
-			driveCommand.execute();
+			//driveCommand.execute();
 		}
 	}
 

@@ -60,8 +60,8 @@ public class Sensors {
 	
 	public static void standardCameraMode()
 	{
-		camera.setBrightness(90);
-		camera.setExposureManual(20);
+		camera.setBrightness(20);
+		camera.setExposureAuto();
 	}
 	
 	public static void gearAcqTiltAngle()

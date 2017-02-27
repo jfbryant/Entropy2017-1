@@ -15,6 +15,8 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.CameraServer;
 
 public class Entropy2017Targeting extends Thread {
+	private static final double inchesFromCenter = 5;
+	private static final double xSpaceInchesConst = 6.25;
 	private static final double angleConstant = 17.0;
 	
 	private static final boolean DEBUG_OUTPUT_ENABLED = false;
@@ -61,6 +63,7 @@ public class Entropy2017Targeting extends Thread {
 		public long pegyHeight = 0;
 		public long pegxSpace = 0;
 		public long pegx = 0;
+		public double realPegX = 0;
 		public long pegy = 0;
 		public double correctionAngle = 0;
 	}
@@ -98,9 +101,6 @@ public class Entropy2017Targeting extends Thread {
         		try {
 					this.wait();
 				} catch (InterruptedException e) {}
-	        	try {
-					this.wait(200);
-				} catch (InterruptedException e) {}
         	}
         	
         	while (framesToProcess > 0)
@@ -110,6 +110,7 @@ public class Entropy2017Targeting extends Thread {
         			cvSink.grabFrame(source);
                     processImage(source);
                     framesToProcess--;
+                    System.out.println("Frames to Process: " + framesToProcess);
         		}
         		else
         		{
@@ -203,7 +204,7 @@ public class Entropy2017Targeting extends Thread {
 			findPeg(step1, targetInfo);
 			if (targetInfo.targetFound)
 			{
-				drawTarget(m, targetInfo.pegx, targetInfo.pegy, true);
+				drawTarget(m, (long)targetInfo.realPegX, targetInfo.pegy, true);
 			}
 		}
 		else if (targetInfo.targetType == "highGoal")
@@ -265,7 +266,8 @@ public class Entropy2017Targeting extends Thread {
 	    	output.pegxSpace = xpeaks.get(1).getStart() - xpeaks.get(0).getStop();
 	    	output.pegyHeight = ypeaks.get(0).getStop() - ypeaks.get(0).getStart();
 	    	output.pegy = ypeaks.get(0).getStart() + output.pegyHeight/2;
-	    	output.correctionAngle = (double)((output.pegx - m.cols() / 2)) / angleConstant;
+	    	output.realPegX = output.pegx - output.pegxSpace * inchesFromCenter / xSpaceInchesConst;
+	    	output.correctionAngle = (double)((output.realPegX - m.cols() / 2)) / angleConstant;
 	    	if (DEBUG_OUTPUT_ENABLED)
 	    	{
 	    		System.out.println("pegx = " + output.pegx + " , " + "pegxspace = " + 

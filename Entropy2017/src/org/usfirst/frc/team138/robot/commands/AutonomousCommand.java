@@ -41,24 +41,30 @@ public class AutonomousCommand extends CommandGroup {
 				}
 				addSequential(new GearCorrect(4));
 				addSequential(new AutoDrive(0.6, 12));
-				addSequential(new PushGear());
-				addSequential(new PushGear());
-				addSequential(new AutoDrive(-0.7, 12));
+				addSequential(new SetClawPosition(true));
+				addSequential(new PushGear(true));
+				addSequential(new Wait(0.2));
+				addSequential(new AutoDrive(-0.7, 15));
+				addSequential(new PushGear(false));
+				addSequential(new Wait(0.1));
+				addSequential(new SetClawPosition(false));
 			}
 			if (startPos == "middle")
 			{
-				addSequential(new AutoDrive(0.7, 50));
+				addSequential(new AutoDrive(0.7, 45));
 				addSequential(new GearCorrect(4));
-				addSequential(new AutoDrive(0.6, 19));
+				addSequential(new AutoDrive(0.6, 24));
 				addSequential(new SetClawPosition(true));
-				addSequential(new PushGear());
-				addSequential(new PushGear());
+				addSequential(new PushGear(true));
+				addSequential(new Wait(0.2));
 				addSequential(new AutoDrive(-0.7, 15));
+				addSequential(new PushGear(false));
+				addSequential(new Wait(0.1));
 				addSequential(new SetClawPosition(false));
 			}
 			if (startPos == "right")
 			{
-				addSequential(new AutoDrive(0.7, 86));
+				addSequential(new AutoDrive(0.75, 86));
 				if (team == "red")
 				{
 					addSequential(new AutoDrive(-52.5));
@@ -68,10 +74,14 @@ public class AutonomousCommand extends CommandGroup {
 					addSequential(new AutoDrive(52.5));
 				}
 				addSequential(new GearCorrect(4));
-				addSequential(new AutoDrive(0.6, 30));
-				addSequential(new PushGear());
-				addSequential(new PushGear());
-				addSequential(new AutoDrive(-0.7, 12));
+				addSequential(new AutoDrive(0.6, 13));
+				addSequential(new SetClawPosition(true));
+				addSequential(new PushGear(true));
+				addSequential(new Wait(0.2));
+				addSequential(new AutoDrive(-0.7, 15));
+				addSequential(new PushGear(false));
+				addSequential(new Wait(0.1));
+				addSequential(new SetClawPosition(false));
 			}
 			
 			// This mode then shoots fuel into the goal depending on team and start position

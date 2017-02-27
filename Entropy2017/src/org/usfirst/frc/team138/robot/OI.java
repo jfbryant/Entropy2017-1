@@ -23,7 +23,7 @@ public class OI {
     Button autoGearPlaceButton = new JoystickButton(operatorStick, 11);
     
     public OI(){
-    	toggleGearRamButton.whenPressed(new PushGear());
+    	toggleGearRamButton.whileHeld(new PushGear());
     	toggleChuteGuardButton.whenPressed(new SetGuardPosition());
     	toggleWristButton.whenPressed(new SetWristPosition());
     	toggleClawButton.whenPressed(new SetClawPosition());
