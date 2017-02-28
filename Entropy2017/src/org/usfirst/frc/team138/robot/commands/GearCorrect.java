@@ -52,8 +52,9 @@ public class GearCorrect extends Command {
 					System.out.println("Correction Angle: " +  cumulation.correctionAngle / targetsFound);
 					System.out.println("Target Peg X: " + cumulation.aimX / targetsFound);
 					System.out.println("Real Peg X: " + cumulation.x / targetsFound);
+					//isDone = true;
 					
-					//driveCommand.initialize();
+					driveCommand.initialize();
 				}
 				else
 				{
@@ -70,7 +71,7 @@ public class GearCorrect extends Command {
 		}
 		else
 		{
-			//driveCommand.execute();
+			driveCommand.execute();
 		}
 	}
 

@@ -24,7 +24,7 @@ public class Entropy2017Targeting extends Thread {
 	
 	// Constants to find correction angle
 	private static final double pixelsPerDegree = 17.0;
-	private static final double cameraOffsetInches = -5;
+	private static final double cameraOffsetInches = -5.1;
 	private static final double shooterOffsetInches = 12;
 	private static final double pegGapInches = 6.25;
 	private static final double pegWidthInches = 10.25;
@@ -64,6 +64,9 @@ public class Entropy2017Targeting extends Thread {
 	 * @param ropeAndShooterCam previously created rope and shooter camera
 	 */
 	public Entropy2017Targeting(UsbCamera gearCam, UsbCamera ropeAndShooterCam) {
+		gearCamera = gearCam;
+		ropeAndShooterCamera = ropeAndShooterCam;
+		
 		if (gearCam != null && ropeAndShooterCam != null)
 		{
 			pegSink = CameraServer.getInstance().getVideo(gearCamera);
@@ -120,24 +123,32 @@ public class Entropy2017Targeting extends Thread {
             	
             	while (framesToProcess > 0)
             	{
-            		if (!cancelled)
+            		try
             		{
-            			if (processingForPeg)
+            			if (!cancelled)
                 		{
-                			pegSink.grabFrame(frame);
+                			if (processingForPeg)
+                    		{
+                    			pegSink.grabFrame(frame);
+                    		}
+                    		else
+                    		{
+                    			shooterSink.grabFrame(frame);
+                    		}
+                            processImage(frame);
+                            System.out.println("Frame: " + framesToProcess);
+                            framesToProcess--;
                 		}
                 		else
                 		{
-                			shooterSink.grabFrame(frame);
+                			framesToProcess = 0;
+                			getTargetInformation();
+                			cancelled = false;
                 		}
-                        processImage(frame);
-                        framesToProcess--;
             		}
-            		else
+            		catch (Exception e)
             		{
-            			framesToProcess = 0;
-            			getTargetInformation();
-            			cancelled = false;
+            			System.out.println("failed somewhere in processing");
             		}
             	}
             	Sensors.standardCameraMode(processingForPeg);
@@ -153,17 +164,20 @@ public class Entropy2017Targeting extends Thread {
         		{
         			shooterSink.grabFrame(frame);
         		}
-        		if (!cancelled)
-        		{
-                    processImage(frame);
-                    framesToProcess--;
-        		}
-        		else
-        		{
-        			framesToProcess = 0;
-        			getTargetInformation();
-        			cancelled = false;
-        		}
+        		if (framesToProcess > 0)
+            	{
+            		if (!cancelled)
+            		{
+                        processImage(frame);
+                        framesToProcess--;
+            		}
+            		else
+            		{
+            			framesToProcess = 0;
+            			getTargetInformation();
+            			cancelled = false;
+            		}
+            	}
         		if (frameLag > 0)
         		{
         			frameLag--;
@@ -454,31 +468,41 @@ public class Entropy2017Targeting extends Thread {
 	 * @return integer array of sums
 	 */
 	private static long[] sums(Mat m,boolean byRow) {
-		
-		int height = m.rows();
-		int width = m.cols();
-		byte[] data = new byte[height*width];
+		int rows = m.rows();
+		int cols = m.cols();
+		byte[] data = new byte[rows*cols];
 		long[] retSums = null;
 		
-		if (byRow) {
-			retSums = new long[width];
-			for (int column = 0; column < width; column++) {
-				retSums[column] = 0;
-				for (int row=0; row < height; row++) {
-					int k = row * width + column;
-					retSums[column] += Byte.toUnsignedInt(data[k]);
-				}
-			}
+		int status = m.get(0, 0,data);
+		
+		long total = 0;
+		for (int k=0;k<data.length;k++) {
+			total += Byte.toUnsignedInt(data[k]);
 		}
-		else {
-			retSums = new long[height];
-			for (int row=0;row < height; row++) {
-				retSums[row] = 0;
-				for (int column = 0; column < width; column++) {
-					int k = row * width + column;
-					retSums[row] += Byte.toUnsignedInt(data[k]);
+		if (byRow) {
+			retSums = new long[cols];
+			for (int col=0;col<cols;col++) {
+				retSums[col] = 0;
+				for (int row=0;row<rows;row++) {
+					int k = row*cols+col;
+					retSums[col] += Byte.toUnsignedInt(data[k]);
 				}
-			}
+  			}
+  		}
+  		else {
+  			retSums = new long[rows];
+  			for (int row=0;row<rows;row++) {
+  				retSums[row] = 0;
+  				for (int col=0;col<cols;col++) {
+  					int k = row*cols+col;
+  					retSums[row] += Byte.toUnsignedInt(data[k]);
+  				}
+  			}
+  		}
+		
+		int total1 = 0;
+		for (int k=0; k < retSums.length; k++) {
+			total1 += retSums[k];
 		}
 	
 		return retSums;
